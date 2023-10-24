@@ -1,54 +1,41 @@
 from potassium import Potassium, Request, Response
-
+from llava.serve.kwave import main as kwave_main
 from transformers import LlavaProcessor, LlavaForCausalLM
 from PIL import Image
 
 import requests
 import torch
 
+
 app = Potassium("my_app")
 
 # @app.init runs at startup, and loads models into the app's context
 @app.init
 def init():
-    device = 0 if torch.cuda.is_available() else -1
-    model = pipeline('fill-mask', model='bert-base-uncased', device=device)
-    PATH_TO_CONVERTED_WEIGHTS = "shauray/Llava-Llama-2-7B-hf"
+    #create empty dict
 
-    model = LlavaForCausalLM.from_pretrained(PATH_TO_CONVERTED_WEIGHTS)
-    processor = LlavaProcessor.from_pretrained(PATH_TO_CONVERTED_WEIGHTS)
-
-   
-    context = {
-        "model": model,
-        "processor": processor
-    }
-
-    return context
+    return None
 
 # @app.handler runs for every call
 @app.handler("/")
 def handler(context: dict, request: Request) -> Response:
+
     prompt = request.json.get("prompt")
-    model = context.get("model")
-    processor = context.get("processor")
-    url = "https://llava-vl.github.io/static/images/view.jpg"
-    image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
-    prompt = "How can you best describe this image?"
+    image = request.json.get("image")
 
-    inputs = processor(text=prompt, images=image, return_tensors="pt")
-
-    generate_ids = model.generate(**inputs,
-        do_sample=True,
-        max_length=1024,
-        temperature=0.1,
-        top_p=0.9,
+    args = Args(
+        model_path='/var/task/llava-v1.5-7b',
+        external_prompt=prompt,
+        image_file= image,
+        load_4bit=True,
     )
+    
+    output = kwave_main(args, prompt)
+    
 
-    out = processor.decode(generate_ids[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()
     
     return Response(
-        json = {"outputs": out}, 
+        json = {"outputs": output}, 
         status=200
     )
 
@@ -56,33 +43,16 @@ if __name__ == "__main__":
     app.serve()
 
 
-"""
-
-
-PATH_TO_CONVERTED_WEIGHTS = "shauray/Llava-Llama-2-7B-hf"
-
-model = LlavaForCausalLM.from_pretrained(PATH_TO_CONVERTED_WEIGHTS)
-processor = LlavaProcessor.from_pretrained(PATH_TO_CONVERTED_WEIGHTS)
-
-url = "https://llava-vl.github.io/static/images/view.jpg"
-image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
-prompt = "How can you best describe this image?"
-
-inputs = processor(text=prompt, images=image, return_tensors="pt")
-
-generate_ids = model.generate(**inputs,
-     do_sample=True,
-     max_length=1024,
-     temperature=0.1,
-     top_p=0.9,
- )
-
-out = processor.decode(generate_ids[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()
-
-def download_model():
-    # do a dry run of loading the huggingface model, which will download weights
-    pipeline('fill-mask', model='bert-base-uncased')
-
-if __name__ == "__main__":
-    download_model()
-    """
+class Args:
+    def __init__(self, model_path, image_file, device='cuda', conv_mode=None, temperature=0.2, max_new_tokens=512, load_8bit=False, load_4bit=False, debug=False, model_base=None, image_aspect_ratio='pad'):
+        self.model_path = model_path
+        self.image_file = image_file
+        self.device = device
+        self.conv_mode = conv_mode
+        self.temperature = temperature
+        self.max_new_tokens = max_new_tokens
+        self.load_8bit = load_8bit
+        self.load_4bit = load_4bit
+        self.debug = debug
+        self.model_base = model_base
+        self.image_aspect_ratio = image_aspect_ratio

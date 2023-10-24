@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    tags: [v*]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::075599579749:role/unbnd-kwave-github-actions-admin
+          aws-region: us-east-1
+          role-duration-seconds: 1200
+          role-session-name: GitHub-Actions-Staging
+
+      # build
+      - uses: aws-actions/amazon-ecr-login@v1
+        id: ecr
+      - uses: docker/metadata-action@v4
+        id: metadata
+        with:
+          images: ${{ steps.ecr.outputs.registry }}/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
+          flavor: latest=true
+      - uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          context: .
