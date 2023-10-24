@@ -13,12 +13,14 @@ RUN apt update && \
 RUN pip3 install --upgrade pip
 ADD requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
+RUN pip install git+https://github.com/shauray8/transformers.git@llava#egg=transformers
+
 
 # Add your model weight files 
 # (in this case we have a python script)
-#ADD download.py .
-#RUN python3 download.py
-RUN git clone https://huggingface.co/liuhaotian/llava-v1.5-13b
+ADD download.py .
+RUN python3 download.py
+# RUN git clone https://huggingface.co/liuhaotian/llava-v1.5-13b
 
 ADD . .
 
