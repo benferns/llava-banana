@@ -48,8 +48,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 args = Args(
     model_path="/var/task/llava-v1.5-7b",
-    # prompt=prompt,
-    # image_file=image,
+    image_file="",
+    prompt="",
     load_4bit=True,
     device=device,
 )
@@ -80,7 +80,7 @@ def handler(event):
 
     for question in questions:
         args.prompt = question
-        outputs = kwave_main(args, model, tokenizer, image_processor, question, image)
+        outputs = kwave_main(args, tokenizer, model, image_processor, context_len)
         answers.append(outputs)
 
     response = {
