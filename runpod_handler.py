@@ -34,8 +34,9 @@ class Args:
 
 # runpod handler
 def handler(event):
-    prompt = event["prompt"]
-    image = event["image"]
+    input_data = event["input"]
+    prompt = input_data["prompt"]
+    image = input_data["image"]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     args = Args(
