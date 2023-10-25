@@ -59,4 +59,5 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
+          file: base.Dockerfile
           tags: bferns/kwave-llava-runpod-base:latest
