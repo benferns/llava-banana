@@ -18,6 +18,7 @@ class Args:
         debug=False,
         model_base=None,
         image_aspect_ratio="pad",
+        prompt="",
     ):
         self.model_path = model_path
         self.image_file = image_file
@@ -30,6 +31,7 @@ class Args:
         self.debug = debug
         self.model_base = model_base
         self.image_aspect_ratio = image_aspect_ratio
+        self.prompt = prompt
 
 
 # runpod handler
@@ -41,13 +43,13 @@ def handler(event):
 
     args = Args(
         model_path="/var/task/llava-v1.5-7b",
-        external_prompt=prompt,
+        prompt=prompt,
         image_file=image,
         load_4bit=True,
         device=device,
     )
 
-    output = kwave_main(args, prompt)
+    output = kwave_main(args)
 
     response = {
         "output": output,

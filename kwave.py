@@ -33,7 +33,7 @@ def load_image(image_file):
     return image
 
 
-def main(args, external_prompt):
+def main(args):
     # Model
     disable_torch_init()
 
@@ -81,7 +81,7 @@ def main(args, external_prompt):
     else:
         image_tensor = image_tensor.to(model.device, dtype=torch.float16)
 
-    inp = external_prompt
+    inp = args.prompt
 
     print(f"{roles[1]}: ", end="")
 
@@ -146,6 +146,6 @@ if __name__ == "__main__":
     parser.add_argument("--load-4bit", action="store_true")
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--image-aspect-ratio", type=str, default="pad")
-    parser.add_argument("--external-prompt", type=str, required=True)
+    parser.add_argument("--prompt", type=str, required=True)
     args = parser.parse_args()
-    main(args, args.external_prompt)
+    main(args)
