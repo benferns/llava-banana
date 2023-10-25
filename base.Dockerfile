@@ -9,23 +9,14 @@ WORKDIR /var/task
 RUN apt update && \
     apt-get install -y python3 python3-pip git git-lfs && git lfs install
 
-
-RUN git clone https://github.com/haotian-liu/LLaVA.git 
-
-RUN cd LLaVA && pip install --upgrade pip  && \
-    pip install -e .
-
-#RUN cd /var/task && git clone https://huggingface.co/liuhaotian/llava-v1.5-7b 
-
-COPY /task/llava-v1.5-7b /var/task/llava-v1.5-7b
+RUN git clone https://github.com/haotian-liu/LLaVA.git && \
+    cd LLaVA && pip install --upgrade pip  && \
+    pip install -e . && \
+    cd /var/task && git clone https://huggingface.co/liuhaotian/llava-v1.5-7b 
 
 COPY ./requirements.txt /var/task/requirements.txt
 
 RUN cd /var/task/ && pip install -r --ignore-installed requirements.txt
-
-COPY ./runpod_handler.py /var/task/LLaVA
-
-COPY ./kwave.py /var/task/LLaVA/llava/serve/kwave.py
 
 EXPOSE 8000
 
