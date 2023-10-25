@@ -1,40 +1,7 @@
 from potassium import Potassium, Request, Response
 from llava.serve.kwave import main as kwave_main
+
 import torch
-
-
-app = Potassium("my_app")
-
-
-# @app.init runs at startup, and loads models into the app's context
-@app.init
-def init():
-    # create empty dict
-    return {}
-
-
-# @app.handler runs for every call
-@app.handler("/")
-def handler(context: dict, request: Request) -> Response:
-    prompt = request.json.get("prompt")
-    image = request.json.get("image")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    args = Args(
-        model_path="/var/task/llava-v1.5-7b",
-        external_prompt=prompt,
-        image_file=image,
-        load_4bit=True,
-        device=device,
-    )
-
-    output = kwave_main(args, prompt)
-
-    return Response(json={"outputs": output}, status=200)
-
-
-if __name__ == "__main__":
-    app.serve()
 
 
 class Args:
@@ -63,3 +30,36 @@ class Args:
         self.debug = debug
         self.model_base = model_base
         self.image_aspect_ratio = image_aspect_ratio
+
+
+app = Potassium("my_app")
+
+
+# @app.init runs at startup, and loads models into the app's context
+@app.init
+def init():
+    # create empty dict
+    return {}
+
+
+# @app.handler runs for every call
+@app.handler("/")
+def handler(context: dict, request: Request) -> Response:
+    prompt = request.json.get("prompt")
+    image = request.json.get("image")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    args = Args(
+        model_path="/var/task/llava-v1.5-7b",
+        image_file=image,
+        load_4bit=True,
+        device=device,
+    )
+
+    output = kwave_main(args, prompt)
+
+    return Response(json={"outputs": output}, status=200)
+
+
+if __name__ == "__main__":
+    app.serve()
