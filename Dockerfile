@@ -18,6 +18,8 @@ RUN cd LLaVA && pip install --upgrade pip  && \
 
 RUN cd /var/task && git clone https://huggingface.co/liuhaotian/llava-v1.5-7b    
 
+ADD ./requirements.txt /var/task/requirements.txt
+
 RUN cd /var/task/ && pip install -r requirements.txt
 
 ADD ./app.py /var/task/LLaVA
