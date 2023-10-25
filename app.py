@@ -10,8 +10,7 @@ app = Potassium("my_app")
 @app.init
 def init():
     # create empty dict
-
-    return None
+    return {}
 
 
 # @app.handler runs for every call
