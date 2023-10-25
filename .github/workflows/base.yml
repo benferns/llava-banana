@@ -2,7 +2,7 @@ name: Build llava base
 
 on:
   push:
-    branches: ["runpod"]
+    tags: ["base*"]
 
 jobs:
   build:

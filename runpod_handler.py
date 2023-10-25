@@ -1,5 +1,4 @@
 import runpod
-from potassium import Potassium, Request, Response
 from llava.serve.kwave import main as kwave_main
 
 import torch

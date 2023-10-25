@@ -2,7 +2,7 @@ FROM bferns/kwave-llava-runpod-base:latest
 
 COPY ./requirements.txt /var/task/requirements.txt
 
-RUN cd /var/task/ && pip install -r --ignore-installed requirements.txt
+RUN pip install runpod 
 
 COPY ./runpod_handler.py /var/task/LLaVA
 

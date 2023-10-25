@@ -1,1 +1,1 @@
-docker build --platform=linux/amd64 -t bferns/kwave-llava-banana .
+docker build --platform=linux/amd64 -t bferns/kwave-llava-runpod .
