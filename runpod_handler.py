@@ -1,13 +1,36 @@
 import runpod
-import time
-import json
-from os import environ
-from
+from potassium import Potassium, Request, Response
+from llava.serve.kwave import main as kwave_main
 
-from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration
 import torch
-from PIL import Image
-import requests
+
+
+class Args:
+    def __init__(
+        self,
+        model_path,
+        image_file,
+        device="cuda",
+        conv_mode=None,
+        temperature=0.2,
+        max_new_tokens=512,
+        load_8bit=False,
+        load_4bit=False,
+        debug=False,
+        model_base=None,
+        image_aspect_ratio="pad",
+    ):
+        self.model_path = model_path
+        self.image_file = image_file
+        self.device = device
+        self.conv_mode = conv_mode
+        self.temperature = temperature
+        self.max_new_tokens = max_new_tokens
+        self.load_8bit = load_8bit
+        self.load_4bit = load_4bit
+        self.debug = debug
+        self.model_base = model_base
+        self.image_aspect_ratio = image_aspect_ratio
 
 
 # runpod handler
