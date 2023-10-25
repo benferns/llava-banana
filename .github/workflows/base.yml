@@ -47,7 +47,7 @@ jobs:
         env:
           DSLIM_HTTP_PROBE: false
         with:
-          target: bferns/kwave-llava-runpod:temp
+          target: bferns/kwave-llava-runpod-base:temp
           tag: ${{  github.ref_name }}
 
       # Dump the report
@@ -59,4 +59,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: bferns/kwave-llava-runpod:${{  github.ref_name }}
+          tags: bferns/kwave-llava-runpod-base:latest
