@@ -3,6 +3,14 @@ from llava.serve.kwave import main as kwave_main
 
 import torch
 import json
+from llava.model.builder import load_pretrained_model
+from llava.utils import disable_torch_init
+from llava.mm_utils import (
+    process_images,
+    tokenizer_image_token,
+    get_model_name_from_path,
+    KeywordsStoppingCriteria,
+)
 
 
 class Args:
@@ -35,26 +43,50 @@ class Args:
         self.prompt = prompt
 
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Model
+args = Args(
+    model_path="/var/task/llava-v1.5-7b",
+    # prompt=prompt,
+    # image_file=image,
+    load_4bit=True,
+    device=device,
+)
+model_name = get_model_name_from_path(args.model_path)
+
+
+disable_torch_init()
+
+tokenizer, model, image_processor, context_len = load_pretrained_model(
+    args.model_path,
+    args.model_base,
+    model_name,
+    args.load_8bit,
+    args.load_4bit,
+    device=args.device,
+)
+
+
 # runpod handler
 def handler(event):
     input_data = event["input"]
-    prompt = input_data["prompt"]
+    questions = input_data["questions"]
     image = input_data["image"]
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # apply to args
+    # args.prompt = prompt
+    args.image_file = image
+    answers = []
 
-    args = Args(
-        model_path="/var/task/llava-v1.5-7b",
-        prompt=prompt,
-        image_file=image,
-        load_4bit=True,
-        device=device,
-    )
-
-    output = kwave_main(args)
+    for question in questions:
+        args.prompt = question
+        outputs = kwave_main(args, model, tokenizer, image_processor, question, image)
+        answers.append(outputs)
 
     response = {
-        "output": output,
+        "answers": answers,
     }
+
     return json.dumps(response)
 
 
