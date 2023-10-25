@@ -1,4 +1,4 @@
-name: Update kwave-llava image
+name: Build llava base
 
 on:
   push:

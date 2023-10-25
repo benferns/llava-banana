@@ -14,10 +14,4 @@ RUN git clone https://github.com/haotian-liu/LLaVA.git && \
     pip install -e . && \
     cd /var/task && git clone https://huggingface.co/liuhaotian/llava-v1.5-7b 
 
-COPY ./requirements.txt /var/task/requirements.txt
 
-RUN cd /var/task/ && pip install -r --ignore-installed requirements.txt
-
-EXPOSE 8000
-
-CMD [ "python3", "-u", "/var/task/LLaVA//runpod_handler.py" ]
