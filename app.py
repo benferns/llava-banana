@@ -22,12 +22,14 @@ def handler(context: dict, request: Request) -> Response:
 
     prompt = request.json.get("prompt")
     image = request.json.get("image")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     args = Args(
         model_path='/var/task/llava-v1.5-7b',
         external_prompt=prompt,
         image_file= image,
         load_4bit=True,
+        device=device,
     )
     
     output = kwave_main(args, prompt)
