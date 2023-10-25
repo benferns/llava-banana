@@ -1,39 +1,61 @@
-name: CI
+name: Update kwave-llava image
 
 on:
   push:
-    tags: [v*]
+    branches: ["runpod"]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::075599579749:role/unbnd-kwave-github-actions-admin
-          aws-region: us-east-1
-          role-duration-seconds: 1200
-          role-session-name: GitHub-Actions-Staging
+      # - name: Set up Docker Buildx
+      #  uses: docker/setup-buildx-action@v3
 
-      # build
-      - uses: aws-actions/amazon-ecr-login@v1
-        id: ecr
-      - uses: docker/metadata-action@v4
-        id: metadata
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
         with:
-          images: ${{ steps.ecr.outputs.registry }}/${{ github.repository }}
-          tags: |
-            type=ref,event=tag
-          flavor: latest=true
-      - uses: docker/build-push-action@v3
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: true
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password:
+            ${{ secrets.DOCKERHUB_TOKEN }}
+
+            # Build the Docker image first
+      - uses: docker/build-push-action@v4
+        with:
+          push: false
+          tags: bferns/kwave-llava-runpod:temp
+
+      # Slim it!
+      - uses: kitabisa/docker-slim-action@v1
+        id: slim
+        env:
+          DSLIM_HTTP_PROBE: false
+        with:
+          target: bferns/kwave-llava-runpod:temp
+          tag: ${{  github.ref_name }}
+
+      # Dump the report
+      - run: echo "${REPORT}"
+        env:
+          REPORT: ${{ steps.slim.outputs.report }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
-          context: .
+          tags: bferns/kwave-llava-runpod:${{  github.ref_name }}

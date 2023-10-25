@@ -1,7 +1,7 @@
 # This is a potassium-standard dockerfile, compatible with Banana
 # Currently we only support python3.8 and the base image defined below at the moment. If you need a different base image or python version please contact https://banana.dev/support
 
-FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime
+FROM runpod/pytorch:2.0.1-py3.10-cuda11.8.0-devel
 
 WORKDIR /var/task
 
@@ -22,10 +22,10 @@ ADD ./requirements.txt /var/task/requirements.txt
 
 RUN cd /var/task/ && pip install -r requirements.txt
 
-ADD ./app.py /var/task/LLaVA
+ADD ./runpod_handler.py /var/task/LLaVA
 
 ADD ./kwave.py /var/task/LLaVA/llava/serve/kwave.py
 
 EXPOSE 8000
 
-CMD python3 -u /var/task/LLaVA/app.py
+CMD [ "python3", "-u", "/var/task/LLaVA//runpod_handler.py" ]
